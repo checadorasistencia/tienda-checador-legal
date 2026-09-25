@@ -1,7 +1,7 @@
 /*
  * SUJETO: Tienda Checador Legal MX
  * DIRECCION: dark mode + glassmorphism + gradientes + motion
- * SEGURIDAD: Solo INSERT publico en Supabase. Lectura solo desde dashboard.
+ * PAGOS: Links directos a Mercado Pago (suscripciones y pagos unicos)
  */
 
 import { useState, useCallback } from 'react';
@@ -27,11 +27,11 @@ async function guardarPedido(pedido) {
 }
 
 const PRODUCTOS = [
-  { id: 'lector', nombre: 'Lector de Huella ZK9500', precio: 1500, unidad: 'pza', desc: 'Lector biometrico USB. 3,000 plantillas. TCP/IP y USB.', specs: ['Sensor optico ZKTeco', '3,000 huellas', 'USB + TCP/IP', 'Garantia 1 ano'], icono: '\u{1F512}', tag: null, color: 'neutral' },
-  { id: 'mensual-1', nombre: 'Licencia Mensual', sub: '1 Sucursal', precio: 2500, unidad: '/mes', desc: 'Control completo para un local. Sin limite de empleados.', specs: ['Sin limite de empleados', 'Lector incluido', 'Instalacion y soporte', 'Actualizaciones'], icono: '\u{1F4CB}', tag: null, color: 'ambar' },
-  { id: 'mensual-5', nombre: 'Licencia Mensual', sub: 'Hasta 5 Sucursales', precio: 4000, unidad: '/mes', desc: '5 locales, un solo panel. Lector por sucursal.', specs: ['Hasta 5 sucursales', 'Lector por sucursal', 'Multi-sucursal', 'Soporte prioritario'], icono: '\u{1F3E2}', tag: 'Popular', color: 'teal' },
-  { id: 'anual-1', nombre: 'Licencia Anual', sub: '1 Sucursal', precio: 15000, unidad: '/ano', desc: 'Ano completo. $1,250/mes. Ahorra $15,000.', specs: ['Sin limite de empleados', 'Lector incluido', 'Soporte 12 meses', 'Ahorra 50%'], icono: '\u{1F6E1}\uFE0F', tag: 'Mejor valor', color: 'ambar' },
-  { id: 'anual-5', nombre: 'Licencia Anual', sub: 'Hasta 5 Sucursales', precio: 30000, unidad: '/ano', desc: 'Cobertura total. $2,500/mes. Ahorra $18,000.', specs: ['Hasta 5 sucursales', 'Lectores incluidos', 'Soporte prioritario', 'Ahorra 37.5%'], icono: '\u2B50', tag: null, color: 'teal' },
+  { id: 'lector', nombre: 'Lector de Huella ZK9500', precio: 1500, unidad: 'pza', desc: 'Lector biometrico USB. 3,000 plantillas. TCP/IP y USB.', specs: ['Sensor optico ZKTeco', '3,000 huellas', 'USB + TCP/IP', 'Garantia 1 ano'], icono: '\u{1F512}', tag: null, color: 'neutral', link: 'https://mpago.li/1VoqTS6' },
+  { id: 'mensual-1', nombre: 'Licencia Mensual', sub: '1 Sucursal', precio: 2500, unidad: '/mes', desc: 'Control completo para un local. Sin limite de empleados.', specs: ['Sin limite de empleados', 'Lector incluido', 'Instalacion y soporte', 'Actualizaciones'], icono: '\u{1F4CB}', tag: null, color: 'ambar', link: 'https://mpago.la/2i4CJVH' },
+  { id: 'mensual-5', nombre: 'Licencia Mensual', sub: 'Hasta 5 Sucursales', precio: 4000, unidad: '/mes', desc: '5 locales, un solo panel. Lector por sucursal.', specs: ['Hasta 5 sucursales', 'Lector por sucursal', 'Multi-sucursal', 'Soporte prioritario'], icono: '\u{1F3E2}', tag: 'Popular', color: 'teal', link: 'https://mpago.la/17eqLuj' },
+  { id: 'anual-1', nombre: 'Licencia Anual', sub: '1 Sucursal', precio: 15000, unidad: '/ano', desc: 'Ano completo. $1,250/mes. Ahorra $15,000.', specs: ['Sin limite de empleados', 'Lector incluido', 'Soporte 12 meses', 'Ahorra 50%'], icono: '\u{1F6E1}\uFE0F', tag: 'Mejor valor', color: 'ambar', link: 'https://mpago.li/2nBpWhi' },
+  { id: 'anual-5', nombre: 'Licencia Anual', sub: 'Hasta 5 Sucursales', precio: 30000, unidad: '/ano', desc: 'Cobertura total. $2,500/mes. Ahorra $18,000.', specs: ['Hasta 5 sucursales', 'Lectores incluidos', 'Soporte prioritario', 'Ahorra 37.5%'], icono: '\u2B50', tag: null, color: 'teal', link: 'https://mpago.li/1d8SJuP' },
 ];
 
 const CARACTERISTICAS = [
@@ -450,10 +450,16 @@ export default function App() {
                     </li>
                   ))}
                 </ul>
-                <button onClick={() => agregarAlCarrito(p)}
-                  className={`mt-7 w-full rounded-full bg-white/[0.06] py-3.5 font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-white/80 border border-white/[0.08] ${col.btn} transition-all`}>
-                  Agregar al Carrito
-                </button>
+                <div className="mt-7 space-y-3">
+                  <a href={p.link} target="_blank" rel="noopener"
+                    className={`block w-full rounded-full bg-white/[0.06] py-3.5 text-center font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-white/80 border border-white/[0.08] ${col.btn} transition-all`}>
+                    Comprar Ahora
+                  </a>
+                  <button onClick={() => agregarAlCarrito(p)}
+                    className="w-full rounded-full border border-white/[0.08] py-2.5 font-mono text-[11px] uppercase tracking-[0.1em] text-white/50 hover:bg-white/[0.05] transition-colors">
+                    + Agregar al Carrito
+                  </button>
+                </div>
               </Glow>
               );
             })}
