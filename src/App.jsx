@@ -1,4 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+/*
+ * SUJETO: Tienda Checador Legal MX
+ * DIRECCION: dark mode + glassmorphism + gradientes + motion
+ * SEGURIDAD: Solo INSERT publico en Supabase. Lectura solo desde dashboard.
+ */
+
+import { useState, useCallback } from 'react';
 import './styles.css';
 
 /* SUPABASE CONFIG */
@@ -21,49 +27,40 @@ async function guardarPedido(pedido) {
   } catch { return false; }
 }
 
-async function cargarPedidos() {
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/pedidos?order=created_at.desc&limit=50`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
-    });
-    return res.ok ? await res.json() : [];
-  } catch { return []; }
-}
-
 const PRODUCTOS = [
-  { id: 'lector', nombre: 'Lector de Huella ZK9500', precio: 1500, unidad: 'pza', desc: 'Lector biométrico USB. 3,000 plantillas. TCP/IP y USB.', specs: ['Sensor óptico ZKTeco', '3,000 huellas', 'USB + TCP/IP', 'Garantía 1 año'], icono: '\u{1F512}', tag: null, color: 'neutral' },
-  { id: 'mensual-1', nombre: 'Licencia Mensual', sub: '1 Sucursal', precio: 2500, unidad: '/mes', desc: 'Control completo para un local. Sin límite de empleados.', specs: ['Sin límite de empleados', 'Lector incluido', 'Instalación y soporte', 'Actualizaciones'], icono: '\u{1F4CB}', tag: null, color: 'ambar' },
+  { id: 'lector', nombre: 'Lector de Huella ZK9500', precio: 1500, unidad: 'pza', desc: 'Lector biometrico USB. 3,000 plantillas. TCP/IP y USB.', specs: ['Sensor optico ZKTeco', '3,000 huellas', 'USB + TCP/IP', 'Garantia 1 ano'], icono: '\u{1F512}', tag: null, color: 'neutral' },
+  { id: 'mensual-1', nombre: 'Licencia Mensual', sub: '1 Sucursal', precio: 2500, unidad: '/mes', desc: 'Control completo para un local. Sin limite de empleados.', specs: ['Sin limite de empleados', 'Lector incluido', 'Instalacion y soporte', 'Actualizaciones'], icono: '\u{1F4CB}', tag: null, color: 'ambar' },
   { id: 'mensual-5', nombre: 'Licencia Mensual', sub: 'Hasta 5 Sucursales', precio: 4000, unidad: '/mes', desc: '5 locales, un solo panel. Lector por sucursal.', specs: ['Hasta 5 sucursales', 'Lector por sucursal', 'Multi-sucursal', 'Soporte prioritario'], icono: '\u{1F3E2}', tag: 'Popular', color: 'teal' },
-  { id: 'anual-1', nombre: 'Licencia Anual', sub: '1 Sucursal', precio: 15000, unidad: '/año', desc: 'Año completo. $1,250/mes. Ahorra $15,000.', specs: ['Sin límite de empleados', 'Lector incluido', 'Soporte 12 meses', 'Ahorra 50%'], icono: '\u{1F6E1}\uFE0F', tag: 'Mejor valor', color: 'ambar' },
-  { id: 'anual-5', nombre: 'Licencia Anual', sub: 'Hasta 5 Sucursales', precio: 30000, unidad: '/año', desc: 'Cobertura total. $2,500/mes. Ahorra $18,000.', specs: ['Hasta 5 sucursales', 'Lectores incluidos', 'Soporte prioritario', 'Ahorra 37.5%'], icono: '\u2B50', tag: null, color: 'teal' },
+  { id: 'anual-1', nombre: 'Licencia Anual', sub: '1 Sucursal', precio: 15000, unidad: '/ano', desc: 'Ano completo. $1,250/mes. Ahorra $15,000.', specs: ['Sin limite de empleados', 'Lector incluido', 'Soporte 12 meses', 'Ahorra 50%'], icono: '\u{1F6E1}\uFE0F', tag: 'Mejor valor', color: 'ambar' },
+  { id: 'anual-5', nombre: 'Licencia Anual', sub: 'Hasta 5 Sucursales', precio: 30000, unidad: '/ano', desc: 'Cobertura total. $2,500/mes. Ahorra $18,000.', specs: ['Hasta 5 sucursales', 'Lectores incluidos', 'Soporte prioritario', 'Ahorra 37.5%'], icono: '\u2B50', tag: null, color: 'teal' },
 ];
 
 const CARACTERISTICAS = [
-  { titulo: 'Corrección de marcas', desc: 'El encargado asienta marcas olvidadas con justificación. Todo queda en la bitácora sellada.', icono: '\u270F\uFE0F' },
-  { titulo: 'Impresión con un clic', desc: 'Tarjetas, reportes STPS, pre-nómina. Elige periodo, marca empleados, imprime.', icono: '\u{1F5A8}\uFE0F' },
+  { titulo: 'Correccion de marcas', desc: 'El encargado asienta marcas olvidadas con justificacion. Todo queda en la bitacora sellada.', icono: '\u270F\uFE0F' },
+  { titulo: 'Impresion con un clic', desc: 'Tarjetas, reportes STPS, pre-nomina. Elige periodo, marca empleados, imprime.', icono: '\u{1F5A8}\uFE0F' },
   { titulo: 'Encriptado y trazable', desc: 'SHA-256 + hora CENAM. Nadie puede alterar un registro sin romper la cadena.', icono: '\u{1F510}' },
-  { titulo: 'Auditoría verificable', desc: 'Bitácora completa: quién enroló, corrigió, imprimió. Hash encadenado.', icono: '\u{1F50D}' },
-  { titulo: 'Cumple Art. 132 XXXIV', desc: 'Registro electrónico, trazable, inalterable y auditable. Exigible desde 2027.', icono: '\u2696\uFE0F' },
-  { titulo: 'Enrolamiento en 3 pasos', desc: 'Alta, dedo al lector 3 veces, listo. Voz humana guía al encargado.', icono: '\u{1F446}' },
-  { titulo: 'Exporta a tu nómina', desc: 'Excel con formatos listos para CONTPAQi, Aspel, NOI, SUA y más. O diseña el tuyo con el editor de formatos.', icono: '\u{1F4E4}' },
-  { titulo: 'Multi-nómina', desc: '¿Usas diferentes sistemas en distintas sucursales? Cada una exporta al formato que necesita.', icono: '\u{1F504}' },
+  { titulo: 'Auditoria verificable', desc: 'Bitacora completa: quien enrollo, corrigio, imprimio. Hash encadenado.', icono: '\u{1F50D}' },
+  { titulo: 'Cumple Art. 132 XXXIV', desc: 'Registro electronico, trazable, inalterable y auditable. Exigible desde 2027.', icono: '\u2696\uFE0F' },
+  { titulo: 'Enrolamiento en 3 pasos', desc: 'Alta, dedo al lector 3 veces, listo. Voz humana guia al encargado.', icono: '\u{1F446}' },
+  { titulo: 'Exporta a tu nomina', desc: 'Excel con formatos listos para CONTPAQi, Aspel, NOI, SUA y mas. O disena el tuyo con el editor de formatos.', icono: '\u{1F4E4}' },
+  { titulo: 'Multi-nomina', desc: 'Usas diferentes sistemas en distintas sucursales? Cada una exporta al formato que necesita.', icono: '\u{1F504}' },
 ];
 
 const TESTIMONIOS = [
-  { nombre: 'Roberto Castañeda', cargo: 'Dueño', empresa: 'SKYNOVA', texto: 'Llevábamos años con tarjeta perforada. Checador Legal entendió lo que necesita un restaurante: funciona sin internet, sin tablet cara, sin capacitación de una semana.' },
-  { nombre: 'María Elena Jauz', cargo: 'Gerente RRHH', empresa: 'JAUZ', texto: 'Lo que me vendió fue la auditoría. Antes no tenía cómo probar que alguien checó. Ahora cada marca tiene sello y cadena. La STPS lo acepta sin discusión.' },
-  { nombre: 'Fernando Lizárraga', cargo: 'Dir. Operaciones', empresa: 'AUTOS LIZBETH', texto: '4 sucursales, cada una con su control. Con la multi-sucursal todo llega a un panel. El técnico instaló todo y capacitó. No tuve que hacer nada.' },
+  { nombre: 'Roberto Castaneda', cargo: 'Dueno', empresa: 'SKYNOVA', texto: 'Llevabamos anos con tarjeta perforada. Checador Legal entendio lo que necesita un restaurante: funciona sin internet, sin tablet cara, sin capacitacion de una semana.' },
+  { nombre: 'Maria Elena Jauz', cargo: 'Gerente RRHH', empresa: 'JAUZ', texto: 'Lo que me vendio fue la auditoria. Antes no tenia como probar que alguien checo. Ahora cada marca tiene sello y cadena. La STPS lo acepta sin discusion.' },
+  { nombre: 'Fernando Lizarraga', cargo: 'Dir. Operaciones', empresa: 'AUTOS LIZBETH', texto: '4 sucursales, cada una con su control. Con la multi-sucursal todo llega a un panel. El tecnico instalo todo y capacito. No tuve que hacer nada.' },
 ];
 
 const FAQS = [
-  { q: '¿Necesito internet?', a: 'No. Corre 100% en la PC. Solo usa internet para actualizaciones y sincronizar hora CENAM. Sin internet sigue registrando.' },
-  { q: '¿Si un empleado olvida checar?', a: 'El encargado asienta la marca con justificación. Queda en bitácora: quién corrigió y por qué.' },
-  { q: '¿Puedo usar mi propio lector?', a: 'Optimizado para ZKTeco ZK9500. Si ya tienes uno, funciona. Si no, lo incluimos.' },
-  { q: '¿Cómo es la instalación?', a: 'Nuestro técnico va, instala, configura, enrola al personal y te deja operando. Incluido.' },
-  { q: '¿Exporta a mi nómina?', a: 'Sí. Excel con formatos para Aspel, Contpaqi y otros. También diseñas el tuyo.' },
-  { q: '¿Si la STPS pide reporte?', a: 'Un clic genera el paquete: tarjetas, reporte de jornadas, bitácora. Todo sellado.' },
-  { q: '¿Los datos son seguros?', a: 'SHA-256 encadenado. No se puede alterar sin romper la cadena. Datos en tu PC, nunca en la nube.' },
-  { q: '¿Puedo cancelar?', a: 'Sí, sin penalización. Tus datos se quedan en tu PC y puedes exportarlos.' },
+  { q: 'Necesito internet?', a: 'No. Corre 100% en la PC. Solo usa internet para actualizaciones y sincronizar hora CENAM. Sin internet sigue registrando.' },
+  { q: 'Si un empleado olvida checar?', a: 'El encargado asienta la marca con justificacion. Queda en bitacora: quien corrigio y por que.' },
+  { q: 'Puedo usar mi propio lector?', a: 'Optimizado para ZKTeco ZK9500. Si ya tienes uno, funciona. Si no, lo incluimos.' },
+  { q: 'Como es la instalacion?', a: 'Nuestro tecnico va, instala, configura, enrola al personal y te deja operando. Incluido.' },
+  { q: 'Exporta a mi nomina?', a: 'Si. Excel con formatos para Aspel, Contpaqi y otros. Tambien disenas el tuyo.' },
+  { q: 'Si la STPS pide reporte?', a: 'Un clic genera el paquete: tarjetas, reporte de jornadas, bitacora. Todo sellado.' },
+  { q: 'Los datos son seguros?', a: 'SHA-256 encadenado. No se puede alterar sin romper la cadena. Datos en tu PC, nunca en la nube.' },
+  { q: 'Puedo cancelar?', a: 'Si, sin penalizacion. Tus datos se quedan en tu PC y puedes exportarlos.' },
 ];
 
 const EMPRESAS = ['SKYNOVA', 'JAUZ', 'AUTOS LIZBETH', 'RIU HOTEL'];
@@ -102,13 +99,13 @@ function Glow({ children, className = '' }) {
 
 function Simulador({ onCerrar }) {
   const [vista, setVista] = useState(0);
-  const vistas = ['Tablero', 'Empleados', 'Rol Semanal', 'Reportes', 'Impresión'];
+  const vistas = ['Tablero', 'Empleados', 'Rol Semanal', 'Reportes', 'Impresion'];
   const tutorial = [
     { titulo: 'Zona de Checada', desc: 'El empleado pone su dedo en el lector. La app reconoce la huella, registra la hora oficial CENAM y confirma con voz humana.' },
-    { titulo: 'Tablero del Día', desc: 'Quién está en turno, quién llegó tarde, faltas y jornadas cerradas. En tiempo real.' },
+    { titulo: 'Tablero del Dia', desc: 'Quien esta en turno, quien llego tarde, faltas y jornadas cerradas. En tiempo real.' },
     { titulo: 'Alta de Empleados', desc: 'Nombre, puesto, salario. La huella se enrola en 3 pasos con el lector.' },
     { titulo: 'Rol Semanal', desc: 'Asignas turnos como en Excel. Publicar activa el control de esa semana.' },
-    { titulo: 'Reportes y Cumplimiento', desc: 'Un clic: tarjetas de asistencia, reportes STPS, pre-nómina. Todo sellado y auditable.' },
+    { titulo: 'Reportes y Cumplimiento', desc: 'Un clic: tarjetas de asistencia, reportes STPS, pre-nomina. Todo sellado y auditable.' },
   ];
 
   return (
@@ -140,7 +137,7 @@ function Simulador({ onCerrar }) {
             <div className="mt-6 rounded-xl border border-dashed border-white/[0.1] bg-white/[0.02] p-12 text-center">
               <Huella size={48} className="mx-auto text-white/20" />
               <p className="mt-4 font-mono text-[12px] uppercase tracking-[0.15em] text-white/40">{vistas[vista]}</p>
-              <p className="mt-2 text-[17px] text-white/30">La versión completa muestra esta pantalla con datos reales</p>
+              <p className="mt-2 text-[17px] text-white/30">La version completa muestra esta pantalla con datos reales</p>
             </div>
           </Glow>
           <div className="mt-6 flex items-center justify-between">
@@ -175,7 +172,7 @@ function ContadorUrgencia() {
     <div className="inline-flex items-center gap-3 rounded-full border border-red-400/20 bg-red-400/[0.08] px-5 py-2">
       <div className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
       <span className="font-mono text-[17px] text-red-300">
-        <strong className="font-bold">{dias}</strong> días para cumplir la reforma
+        <strong className="font-bold">{dias}</strong> dias para cumplir la reforma
       </span>
     </div>
   );
@@ -184,11 +181,11 @@ function ContadorUrgencia() {
 function Comparador() {
   const rows = [
     ['Sucursales', '1', 'Hasta 5', '1', 'Hasta 5'],
-    ['Empleados', 'Sin límite', 'Sin límite', 'Sin límite', 'Sin límite'],
+    ['Empleados', 'Sin limite', 'Sin limite', 'Sin limite', 'Sin limite'],
     ['Lector ZK9500', 'Incluido', 'Incluido', 'Incluido', 'Incluido'],
-    ['Instalación', '✓', '✓', '✓', '✓'],
+    ['Instalacion', 'Si', 'Si', 'Si', 'Si'],
     ['Soporte', '12 meses', '12 meses', '12 meses', 'Prioritario 12 meses'],
-    ['Actualizaciones', '✓', '✓', '✓', '✓'],
+    ['Actualizaciones', 'Si', 'Si', 'Si', 'Si'],
     ['Precio/mes', '$2,500', '$4,000', '$1,250', '$2,500'],
     ['Ahorro vs mensual', '—', '—', '50%', '37.5%'],
   ];
@@ -222,10 +219,10 @@ function Comparador() {
 
 function SellosConfianza() {
   const sellos = [
-    { titulo: 'Garantía de 30 días', desc: 'Si no te convence, te devolvemos tu dinero.', icono: '\u{1F6E1}\uFE0F' },
-    { titulo: 'Pago contra entrega', desc: 'Pagas cuando el técnico termina la instalación.', icono: '\u{1F4B5}' },
-    { titulo: 'Soporte incluido', desc: 'Técnico certificado disponible por WhatsApp.', icono: '\u{1F4AC}' },
-    { titulo: 'Datos en tu PC', desc: 'Nada se sube a la nube. Tu información es tuya.', icono: '\u{1F512}' },
+    { titulo: 'Garantia de 30 dias', desc: 'Si no te convence, te devolvemos tu dinero.', icono: '\u{1F6E1}\uFE0F' },
+    { titulo: 'Pago contra entrega', desc: 'Pagas cuando el tecnico termina la instalacion.', icono: '\u{1F4B5}' },
+    { titulo: 'Soporte incluido', desc: 'Tecnico certificado disponible por WhatsApp.', icono: '\u{1F4AC}' },
+    { titulo: 'Datos en tu PC', desc: 'Nada se sube a la nube. Tu informacion es tuya.', icono: '\u{1F512}' },
   ];
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -246,8 +243,6 @@ export default function App() {
   const [simuladorAbierto, setSimuladorAbierto] = useState(false);
   const [faqAbierto, setFaqAbierto] = useState(null);
   const [checkoutAbierto, setCheckoutAbierto] = useState(false);
-  const [pedidosAbierto, setPedidosAbierto] = useState(false);
-  const [pedidos, setPedidos] = useState([]);
   const [enviando, setEnviando] = useState(false);
   const [pedidoExito, setPedidoExito] = useState(null);
   const [formCliente, setFormCliente] = useState({ nombre: '', empresa: '', telefono: '', email: '' });
@@ -275,7 +270,7 @@ export default function App() {
 
   const generarPedidoWhatsApp = () => {
     const lineas = carrito.map(p => `${p.nombre} ${p.sub || ''} x${p.cantidad} — $${(p.precio * p.cantidad).toLocaleString('es-MX')}`);
-    const mensaje = `Hola, me interesa comprar:\n\n${lineas.join('\n')}\n\nTotal: $${total.toLocaleString('es-MX')} MXN\n\n¿Me pueden ayudar con la compra?`;
+    const mensaje = `Hola, me interesa comprar:\n\n${lineas.join('\n')}\n\nTotal: $${total.toLocaleString('es-MX')} MXN\n\nMe pueden ayudar con la compra?`;
     return `https://wa.me/5216462947308?text=${encodeURIComponent(mensaje)}`;
   };
 
@@ -295,10 +290,6 @@ export default function App() {
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">Control de Jornada</div>
             </div>
           </div>
-          <button onClick={async () => { const p = await cargarPedidos(); setPedidos(p); setPedidosAbierto(true); }}
-            className="flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 font-mono text-[12px] uppercase tracking-[0.1em] text-white/50 hover:bg-white/[0.06] hover:text-white transition-all">
-            Pedidos
-          </button>
           <button onClick={() => setCarritoAbierto(!carritoAbierto)}
             className="relative flex items-center gap-2 rounded-full border border-teal-400/20 bg-teal-400/[0.08] px-5 py-2.5 font-mono text-[12px] uppercase tracking-[0.1em] text-teal-300 hover:bg-teal-400/[0.15] hover:text-teal-200 hover:border-teal-400/40 hover:shadow-[0_0_20px_rgba(45,212,191,0.15)] transition-all">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -404,8 +395,8 @@ export default function App() {
       <section id="caracteristicas" className="border-t border-white/[0.06]">
         <div className="mx-auto max-w-7xl px-6 py-24">
           <div className="mb-16 text-center">
-            <div className="font-mono text-[12px] uppercase tracking-[0.25em] text-teal-400/80">Por qué Checador Legal</div>
-            <h2 className="mt-4 font-sans text-[44px] font-bold tracking-tight">Lo que le importa al patrón</h2>
+            <div className="font-mono text-[12px] uppercase tracking-[0.25em] text-teal-400/80">Por que Checador Legal</div>
+            <h2 className="mt-4 font-sans text-[44px] font-bold tracking-tight">Lo que le importa al patron</h2>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {CARACTERISTICAS.map((c, i) => (
@@ -423,9 +414,9 @@ export default function App() {
       <section id="productos" className="border-t border-white/[0.06]">
         <div className="mx-auto max-w-7xl px-6 py-24">
           <div className="mb-16 text-center">
-            <div className="font-mono text-[12px] uppercase tracking-[0.25em] text-teal-400/80">Fichas técnicas</div>
+            <div className="font-mono text-[12px] uppercase tracking-[0.25em] text-teal-400/80">Fichas tecnicas</div>
             <h2 className="mt-4 font-sans text-[44px] font-bold tracking-tight">Productos y Precios</h2>
-            <p className="mt-3 text-[17px] text-white/40">Instalación y soporte incluidos en todas las licencias.</p>
+            <p className="mt-3 text-[17px] text-white/40">Instalacion y soporte incluidos en todas las licencias.</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {PRODUCTOS.map(p => {
@@ -476,7 +467,7 @@ export default function App() {
         <div className="mx-auto max-w-7xl px-6 py-24">
           <div className="mb-16 text-center">
             <div className="font-mono text-[12px] uppercase tracking-[0.25em] text-teal-400/80">Comparador</div>
-            <h2 className="mt-4 font-sans text-[44px] font-bold tracking-tight">¿Cuál te conviene?</h2>
+            <h2 className="mt-4 font-sans text-[44px] font-bold tracking-tight">Cual te conviene?</h2>
           </div>
           <Comparador />
         </div>
@@ -518,7 +509,7 @@ export default function App() {
         <div className="mx-auto max-w-4xl px-6 py-24">
           <div className="mb-16 text-center">
             <div className="font-mono text-[12px] uppercase tracking-[0.25em] text-teal-400/80">Preguntas frecuentes</div>
-            <h2 className="mt-4 font-sans text-[44px] font-bold tracking-tight">¿Tienes dudas?</h2>
+            <h2 className="mt-4 font-sans text-[44px] font-bold tracking-tight">Tienes dudas?</h2>
           </div>
           <div className="space-y-3">
             {FAQS.map((f, i) => (
@@ -547,8 +538,8 @@ export default function App() {
               Protege tu empresa antes del 1 de enero de 2027
             </h2>
             <p className="mt-5 text-[17px] text-white/40 max-w-xl mx-auto">
-              La reforma ya está publicada. La multa mínima son $29,327 por trabajador.
-              Un solo empleado sin registro te cuesta más que 10 años de licencia.
+              La reforma ya esta publicada. La multa minima son $29,327 por trabajador.
+              Un solo empleado sin registro te cuesta mas que 10 anos de licencia.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <button onClick={() => scrollTo('productos')}
@@ -579,7 +570,7 @@ export default function App() {
                 </div>
               </div>
               <p className="mt-5 text-[17px] leading-relaxed text-white/40">
-                Sistema de control de asistencia biométrico con validez jurídica para PyMEs mexicanas.
+                Sistema de control de asistencia biometrico con validez juridica para PyMEs mexicanas.
               </p>
             </div>
             <div>
@@ -587,7 +578,7 @@ export default function App() {
               <div className="mt-5 space-y-3 text-[17px] text-white/50">
                 <div>WhatsApp: <a href="https://wa.me/5216462947308" className="text-teal-300 hover:text-teal-200 transition-colors">646 294 7308</a></div>
                 <div>Correo: <a href="mailto:actasadministrativasclickup@gmail.com" className="text-teal-300 hover:text-teal-200 transition-colors">actasadministrativasclickup@gmail.com</a></div>
-                <div>Ensenada, Baja California, México</div>
+                <div>Ensenada, Baja California, Mexico</div>
               </div>
             </div>
             <div>
@@ -595,7 +586,7 @@ export default function App() {
               <div className="mt-5 space-y-3 text-[17px] text-white/40">
                 <div>Art. 132 fr. XXXIV LFT</div>
                 <div>Hora oficial CENAM</div>
-                <div>Encriptación SHA-256</div>
+                <div>Encriptacion SHA-256</div>
                 <div className="pt-3"><CircuitLine /></div>
               </div>
             </div>
@@ -621,7 +612,7 @@ export default function App() {
               {carrito.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <Huella size={48} className="text-white/10" />
-                  <p className="mt-4 font-sans text-lg font-semibold text-white/40">Carrito vacío</p>
+                  <p className="mt-4 font-sans text-lg font-semibold text-white/40">Carrito vacio</p>
                   <p className="mt-2 text-[17px] text-white/30">Agrega productos para comenzar tu pedido</p>
                 </div>
               ) : (
@@ -693,7 +684,7 @@ export default function App() {
                 </div>
                 <h3 className="font-sans text-xl font-bold text-teal-300">Pedido Registrado</h3>
                 <p className="mt-2 text-white/50">Folio: <span className="font-mono text-teal-300">{pedidoExito}</span></p>
-                <p className="mt-4 text-[14px] text-white/40">Te contactaremos por WhatsApp o correo para confirmar el pago y la instalación.</p>
+                <p className="mt-4 text-[14px] text-white/40">Te contactaremos por WhatsApp o correo para confirmar el pago y la instalacion.</p>
                 <button onClick={() => { setCheckoutAbierto(false); setPedidoExito(null); setCarrito([]); setFormCliente({ nombre: '', empresa: '', telefono: '', email: '' }); }}
                   className="mt-6 rounded-full bg-teal-500 px-8 py-3 font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-black hover:bg-teal-400">
                   Cerrar
@@ -711,7 +702,7 @@ export default function App() {
                   <input type="tel" placeholder="WhatsApp *" value={formCliente.telefono}
                     onChange={e => setFormCliente(p => ({ ...p, telefono: e.target.value }))}
                     className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-white placeholder-white/30 focus:border-teal-400/50 focus:outline-none" />
-                  <input type="email" placeholder="Correo electrónico" value={formCliente.email}
+                  <input type="email" placeholder="Correo electronico" value={formCliente.email}
                     onChange={e => setFormCliente(p => ({ ...p, email: e.target.value }))}
                     className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-white placeholder-white/30 focus:border-teal-400/50 focus:outline-none" />
                 </div>
@@ -751,40 +742,8 @@ export default function App() {
                   className="mt-6 w-full rounded-full bg-teal-500 py-4 font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-black hover:bg-teal-400 disabled:opacity-30 transition-all">
                   {enviando ? 'Guardando...' : 'Confirmar Pedido'}
                 </button>
-                <p className="mt-3 text-center text-[12px] text-white/30">Al confirmar, te contactamos para el pago y la instalación.</p>
+                <p className="mt-3 text-center text-[12px] text-white/30">Al confirmar, te contactamos para el pago y la instalacion.</p>
               </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* PANEL DE PEDIDOS */}
-      {pedidosAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setPedidosAbierto(false)}>
-          <div className="w-full max-w-2xl max-h-[80vh] overflow-auto rounded-2xl border border-white/[0.08] bg-[#0f1f16] p-8" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-sans text-2xl font-bold">Pedidos Recibidos</h2>
-              <button onClick={() => setPedidosAbierto(false)} className="text-white/60 hover:text-white text-2xl">&times;</button>
-            </div>
-            {pedidos.length === 0 ? (
-              <p className="text-center text-white/40 py-8">No hay pedidos aún.</p>
-            ) : (
-              <div className="space-y-3">
-                {pedidos.map(p => (
-                  <div key={p.folio} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-teal-300 font-bold">{p.folio}</span>
-                      <span className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold uppercase ${p.estado === 'pendiente' ? 'bg-amber-400/20 text-amber-300' : 'bg-teal-400/20 text-teal-300'}`}>
-                        {p.estado}
-                      </span>
-                    </div>
-                    <div className="mt-2 text-[14px] text-white/60">{p.cliente} {p.empresa ? `(${p.empresa})` : ''}</div>
-                    <div className="text-[13px] text-white/40">{p.telefono}</div>
-                    <div className="mt-2 font-mono text-[15px] font-bold">${p.total?.toLocaleString('es-MX')} MXN</div>
-                    <div className="mt-1 text-[12px] text-white/30">{new Date(p.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-                  </div>
-                ))}
-              </div>
             )}
           </div>
         </div>
