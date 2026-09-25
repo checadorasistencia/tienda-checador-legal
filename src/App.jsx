@@ -1,7 +1,7 @@
 /*
  * SUJETO: Tienda Checador Legal MX
  * DIRECCION: dark mode + glassmorphism + gradientes + motion
- * PAGOS: Links directos a Mercado Pago (suscripciones y pagos unicos)
+ * PAGOS: Comprar Ahora → carrito → formulario → Supabase → redirección Mercado Pago
  */
 
 import { useState, useCallback } from 'react';
@@ -451,10 +451,10 @@ export default function App() {
                   ))}
                 </ul>
                 <div className="mt-7 space-y-3">
-                  <a href={p.link} target="_blank" rel="noopener"
+                  <button onClick={() => { agregarAlCarrito(p); setCheckoutAbierto(true); }}
                     className={`block w-full rounded-full bg-white/[0.06] py-3.5 text-center font-mono text-[12px] font-bold uppercase tracking-[0.12em] text-white/80 border border-white/[0.08] ${col.btn} transition-all`}>
                     Comprar Ahora
-                  </a>
+                  </button>
                   <button onClick={() => agregarAlCarrito(p)}
                     className="w-full rounded-full border border-white/[0.08] py-2.5 font-mono text-[11px] uppercase tracking-[0.1em] text-white/50 hover:bg-white/[0.05] transition-colors">
                     + Agregar al Carrito
@@ -688,11 +688,17 @@ export default function App() {
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <h3 className="font-sans text-xl font-bold text-teal-300">Pedido Registrado</h3>
-                <p className="mt-2 text-white/50">Folio: <span className="font-mono text-teal-300">{pedidoExito}</span></p>
+                <p className="mt-2 text-white/50">Folio: <span className="font-mono text-teal-300">{pedidoExito.folio}</span></p>
                 <p className="mt-4 text-[14px] text-white/40">Te contactaremos por WhatsApp o correo para confirmar el pago y la instalacion.</p>
+                {pedidoExito.link && (
+                  <a href={pedidoExito.link} target="_blank" rel="noopener"
+                    className="mt-6 block w-full rounded-full bg-teal-500 py-4 text-center font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-black hover:bg-teal-400 transition-all">
+                    Pagar Ahora — ${pedidoExito.total?.toLocaleString('es-MX')} MXN
+                  </a>
+                )}
                 <button onClick={() => { setCheckoutAbierto(false); setPedidoExito(null); setCarrito([]); setFormCliente({ nombre: '', empresa: '', telefono: '', email: '' }); }}
-                  className="mt-6 rounded-full bg-teal-500 px-8 py-3 font-mono text-[12px] font-bold uppercase tracking-[0.1em] text-black hover:bg-teal-400">
-                  Cerrar
+                  className="mt-3 w-full rounded-full border border-white/[0.1] py-3 font-mono text-[12px] uppercase tracking-[0.1em] text-white/50 hover:bg-white/[0.05] transition-colors">
+                  Pagar después
                 </button>
               </div>
             ) : (
@@ -741,8 +747,10 @@ export default function App() {
                       estado: 'pendiente',
                     });
                     setEnviando(false);
-                    if (ok) setPedidoExito(folio);
-                    else alert('Error al guardar. Intenta por WhatsApp.');
+                    if (ok) {
+                      const linkMP = carrito.length === 1 ? carrito[0].link : null;
+                      setPedidoExito({ folio, link: linkMP, total });
+                    } else alert('Error al guardar. Intenta por WhatsApp.');
                   }}
                   className="mt-6 w-full rounded-full bg-teal-500 py-4 font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-black hover:bg-teal-400 disabled:opacity-30 transition-all">
                   {enviando ? 'Guardando...' : 'Confirmar Pedido'}
