@@ -19,7 +19,6 @@ async function guardarPedido(pedido) {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Prefer': 'return=representation',
       },
       body: JSON.stringify(pedido),
     });
