@@ -5,6 +5,11 @@
 @tailwind utilities;
 
 .font-sans { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 
 ::-webkit-scrollbar { width: 5px; }
